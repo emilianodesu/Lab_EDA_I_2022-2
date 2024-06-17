@@ -3,7 +3,7 @@
 #include  <string.h>
 
 struct ALUMNO{
-	char id;
+	char id[12];
 	char nombre[25];
 	char apellido_paterno[25];
 	char apellido_materno[25];
@@ -15,16 +15,15 @@ struct ALUMNO{
 typedef struct ALUMNO alumno;
 typedef alumno *alumnoptr;
 
-void push(alumnoptr *, char, char[25], char[25], char[25], int, char[69],char[35]); 
-char pop(alumnoptr *);
+void push(alumnoptr *, char[12], char[25], char[25], char[25], int, char[69], char[35]); 
+void pop(alumnoptr *);
 int isEmpty(alumnoptr);
 void printStack(alumnoptr);
 void instructions(void);
 
 int main(){
-	
     alumnoptr stackPtr = NULL;
-    char id_alumno, nombre1[25], ap_p[25], ap_m[25], domicilio1[69], correo1[35];
+    char id_alumno[12], nombre1[25], ap_p[25], ap_m[25], domicilio1[69], correo1[35];
 	int edad1, choice;
 
     instructions();
@@ -37,7 +36,7 @@ int main(){
             printf("\nIngrese datos del alumno: \n");
             printf("ID: ");
             setbuf(stdin,NULL);
-            scanf("%c", &id_alumno);
+            scanf("%s", id_alumno);
             printf("NOMBRE: ");
             setbuf(stdin,NULL);
             scanf("%s", nombre1);
@@ -61,7 +60,7 @@ int main(){
             break;
         case 2:
             if (!isEmpty(stackPtr))
-                printf("EL ALUMN@ QUE SALIO DE LA PILA ES ID: %c.\n", pop(&stackPtr));
+                pop(&stackPtr);
             printStack(stackPtr);
             break;
         default:
@@ -84,13 +83,12 @@ void instructions (void){
     "3 PARA TERMINAR EL PROGRAMA\n");
 }
 
-void push(alumnoptr *topPtr, char id_a, char nombre2[25], char ap_pa[25], 
-char ap_ma[25], int edad2, char domicilio2[69], char correo2[35]){
-
+void push(alumnoptr *topPtr, char id_a[12], char nombre2[25], char ap_pa[25], char ap_ma[25], int edad2, char domicilio2[69], char correo2[35]){
     alumnoptr newPtr;
     newPtr = malloc(sizeof(alumno));
     if (newPtr != NULL){
-        newPtr->id = id_a;
+        strcpy(newPtr->id, id_a);
+        // newPtr->id = id_a;
         strcpy(newPtr->nombre, nombre2);
         strcpy(newPtr->apellido_paterno, ap_pa);
         strcpy(newPtr->apellido_materno, ap_ma);
@@ -104,15 +102,14 @@ char ap_ma[25], int edad2, char domicilio2[69], char correo2[35]){
         printf("%s NO SE HA AÑADIDO. NO EXISTE MEMORIA DISPONIBLE.\n", nombre2);
 }
 
-char pop(alumnoptr *topPtr){
+void pop(alumnoptr *topPtr){
     alumnoptr tempPtr;
-	char popValue;
     tempPtr = *topPtr;
-    popValue = (*topPtr)->id;
+    char popValue[12];
+    strcpy(popValue, (*topPtr)->id);
     *topPtr = (*topPtr)->nextPtr;
     free(tempPtr);
-    return (popValue);
-
+    printf("EL ALUMN@ QUE SALIO DE LA PILA ES ID: %s.\n", popValue);
 }
 
 void printStack(alumnoptr currentPtr){
@@ -121,7 +118,7 @@ void printStack(alumnoptr currentPtr){
     else{
         printf("\n\nLA PILA QUEDA CONFORMADA DE LA SIGUIENTE FORMA:\n\n");
         while (currentPtr != NULL){
-            printf("ID: %c\n", currentPtr->id);
+            printf("ID: %s\n", currentPtr->id);
             printf("NOMBRE: %s\n",currentPtr->nombre);
             printf("APELLIDO PATERNO: %s\n",currentPtr->apellido_paterno);
             printf("APELLIDO MATERNO: %s\n",currentPtr->apellido_materno);

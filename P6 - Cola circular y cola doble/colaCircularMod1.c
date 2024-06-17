@@ -3,7 +3,7 @@
 #include <string.h>
 
 struct agenda{ 
-    char id[12];
+    char id;
 	char nombre[25];
 	char apellido_paterno[25];
 	char apellido_materno[25];
@@ -20,15 +20,16 @@ typedef AGENDA *AGENDAPTR;
 
 /* PROTOTIPO DE LOS FUNCIONES UTILIZADAS */
 
-void printQueue(AGENDAPTR);
+void printQueue(AGENDAPTR, int *);
 int isEmpty(AGENDAPTR);
-void dequeue(AGENDAPTR *, AGENDAPTR *);
-void enqueue(AGENDAPTR *, AGENDAPTR *, char[12], char[25], char[25], char[25], char, int, char[69],char[35], char[12]);
+char dequeue(AGENDAPTR *, AGENDAPTR *, int *);
+void enqueue(AGENDAPTR *, AGENDAPTR *, int *, char, char[25], char[25], char[25], char, int, char[69],char[35], char[12]);
 void instructions(void);
 
 int main(){
+    int elements = 0;
     AGENDAPTR headPtr = NULL, tailPtr = NULL;
-    char sexo, id[12], nombre1[25], ap_p[25], ap_m[25], domicilio1[69], correo1[35], telefono[12];
+    char sexo, id, nombre1[25], ap_p[25], ap_m[25], domicilio1[69], correo1[35], telefono[12];
     int choice, edad1;
     char item;
 
@@ -42,7 +43,7 @@ int main(){
             printf("\nIngrese datos: \n");
             printf("ID: ");
             setbuf(stdin,NULL);
-            scanf("%s", id);
+            scanf("%c", &id);
             printf("NOMBRE: ");
             setbuf(stdin,NULL);
             scanf("%s", nombre1);
@@ -67,14 +68,16 @@ int main(){
             printf("TELEFONO (10 digitos): ");
             setbuf(stdin,NULL);
             scanf("%s", telefono);
-            enqueue(&headPtr, &tailPtr, id, nombre1, ap_p, ap_m, sexo, edad1, domicilio1, correo1, telefono);
-            printQueue(headPtr);
+            enqueue(&headPtr, &tailPtr, &elements, id, nombre1, ap_p, ap_m, sexo, edad1, domicilio1, correo1, telefono);
+            printQueue(headPtr, &elements);
             break;
         
         case 2:
-            if (!isEmpty(headPtr))
-                dequeue(&headPtr, &tailPtr);
-            printQueue(headPtr);
+            if (!isEmpty(headPtr)){
+                item = dequeue(&headPtr, &tailPtr, &elements);
+                printf("Se elimino el ID %c.\n",item);
+            }
+            printQueue(headPtr, &elements);
             break;
         
         default:
@@ -96,12 +99,12 @@ void instructions(void){
     "3 para terminar la ejecucion\n");
 }
 
-void enqueue(AGENDAPTR *headPtr, AGENDAPTR *tailPtr, char id[12], char nombre[25] , char ap_pa[25], char ap_ma[25], char sexo, int edad, char domicilio[69], char correo[35], char telefono[12]){
+void enqueue(AGENDAPTR *headPtr, AGENDAPTR *tailPtr, int *elementsPtr, char id, char nombre[25] , char ap_pa[25], char ap_ma[25], char sexo, int edad, char domicilio[69], char correo[35], char telefono[12]){
     AGENDAPTR newPtr;
     newPtr = malloc(sizeof(AGENDA));
 
     if (newPtr != NULL){
-        strcpy(newPtr->id, id);
+        newPtr->id = id;
         strcpy(newPtr->nombre, nombre);
         strcpy(newPtr->apellido_paterno, ap_pa);
         strcpy(newPtr->apellido_materno, ap_ma);
@@ -110,42 +113,51 @@ void enqueue(AGENDAPTR *headPtr, AGENDAPTR *tailPtr, char id[12], char nombre[25
         strcpy(newPtr->domicilio, domicilio);
         strcpy(newPtr->correo, correo);
         strcpy(newPtr->telefono, telefono);
-        newPtr->nextPtr = NULL;
 
-        if (isEmpty(*headPtr))
+        if (isEmpty(*headPtr)){
             *headPtr = newPtr;
-        else
+            newPtr->nextPtr = NULL;
+        }
+        else{
+            newPtr->nextPtr = *headPtr;
             (*tailPtr)->nextPtr = newPtr;
+        }
         *tailPtr = newPtr;
+        (*elementsPtr)++;
     }
     else
-        printf("ID %s NO SE PUDO AGREGAR. NO HAY MEMORIA DISPONIBLE.\n", id);
+        printf("ID %c NO SE PUDO AGREGAR. NO HAY MEMORIA DISPONIBLE.\n", id);
 }
 
-void dequeue(AGENDAPTR *headPtr, AGENDAPTR *tailPtr){
-    char value[12];
+char dequeue(AGENDAPTR *headPtr, AGENDAPTR *tailPtr, int *elementsPtr){
+    char value;
     AGENDAPTR tempPtr;
-    strcpy(value, (*headPtr)->id);
+    value = (*headPtr)->id;
     tempPtr = *headPtr;
     *headPtr = (*headPtr)->nextPtr;
-
-    if (*headPtr == NULL)
-        *tailPtr = NULL;
+    if (*headPtr == *tailPtr)
+        (*tailPtr)->nextPtr = NULL;
+    else
+        (*tailPtr)->nextPtr = *headPtr;
     free(tempPtr);
-    printf("SE DESENCOLO EL ELEMENTO CON EL ID: %s.\n", value);
+    (*elementsPtr)--;
+    return value;
 }
 
 int isEmpty(AGENDAPTR headPtr){
     return headPtr == NULL;
 }
 
-void printQueue(AGENDAPTR currentPtr){
+
+void printQueue(AGENDAPTR currentPtr, int *elementsPtr){
+    int i;
     if (currentPtr == NULL)
         printf("LA COLA ESTA VACIA.\n\n");
     else{
-        printf("\n\nLA COLA ES:\n\n");
-        while (currentPtr != NULL){
-            printf("ID: %s\n", currentPtr->id);
+        printf("\n\nLA COLA ES:\n");
+        for (i = 0; i < *elementsPtr; i++){
+            printf("\n(%p)\n", currentPtr);
+            printf("ID: %c\n", currentPtr->id);
             printf("NOMBRE: %s\n",currentPtr->nombre);
             printf("APELLIDO PATERNO: %s\n",currentPtr->apellido_paterno);
             printf("APELLIDO MATERNO: %s\n",currentPtr->apellido_materno);
@@ -159,7 +171,6 @@ void printQueue(AGENDAPTR currentPtr){
             printf(" v\n");
             currentPtr = currentPtr->nextPtr;
         }
-        printf("NULL\n\n");
+        printf("\n(%p)\n", currentPtr);
     }
 }
-
